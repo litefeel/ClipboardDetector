@@ -1,13 +1,14 @@
-﻿<Window x:Class="ClipboardDetector.MainWindow"
+﻿<Window x:Name="myWindow" x:Class="ClipboardDetector.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ClipboardDetector"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <TextBox x:Name="myTxt" HorizontalContentAlignment="Stretch" HorizontalAlignment="Left" Margin="146,84,0,0" Text="TextBox" TextWrapping="Wrap" VerticalAlignment="Top" Width="417" Height="218" TextChanged="TextBox_TextChanged"/>
+        Title="MainWindow" Height="70" Topmost="True" Width="400" WindowStyle="None" AllowsTransparency="True"
+        MouseLeftButtonDown="myWindow_MouseLeftButtonDown" MouseDoubleClick="myWindow_MouseDoubleClick" ShowInTaskbar="False" ResizeMode="CanResize" >
+    <Grid Margin="0,0,0,0">
+        <TextBox x:Name="myTxt" IsEnabled="False" Text="TextBox" FontSize="14"/>
 
     </Grid>
 </Window>

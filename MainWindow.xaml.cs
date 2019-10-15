@@ -37,8 +37,9 @@ namespace ClipboardDetector
 
             InitializeComponent();
 
-            Console.WriteLine("==================");
-            myTxt.Text = "++++++++++++++";
+            isSmall = true;
+            myWindow_MouseDoubleClick(null, null);
+
         }
 
         private void ClipboardChanged(object sender, SharpClipboard.ClipboardChangedEventArgs e)
@@ -80,9 +81,30 @@ namespace ClipboardDetector
             }
         }
 
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void myWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            DragMove();
 
+           
+        }
+
+        private bool isSmall = false;
+        private void myWindow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            isSmall = !isSmall;
+            if(isSmall)
+            {
+                myWindow.Width = 50;
+                myWindow.Height = 50;
+                myWindow.Opacity = 0.5d;
+            }
+            else
+            {
+                myWindow.Width = 400;
+                myWindow.Height = 70;
+                myWindow.Opacity = 0.9d;
+            }
+            
         }
     }
 }
