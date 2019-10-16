@@ -4,10 +4,41 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon />
+    <Win32Resource />
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Libs\**" />
+    <Compile Remove="NotifyIconWpf\**" />
+    <EmbeddedResource Remove="Libs\**" />
+    <EmbeddedResource Remove="NotifyIconWpf\**" />
+    <None Remove="Libs\**" />
+    <None Remove="NotifyIconWpf\**" />
+    <Page Remove="Libs\**" />
+    <Page Remove="NotifyIconWpf\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Icons\Error.ico" />
+    <None Remove="Icons\icons8.png" />
+    <None Remove="Icons\Inactive.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="SharpClipboard" Version="3.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="NotifyIconWpf\NotifyIconWpf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icons\Inactive.ico" />
   </ItemGroup>
 
 </Project>

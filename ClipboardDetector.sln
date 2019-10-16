@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29409.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClipboardDetector", "ClipboardDetector.csproj", "{C8F16937-2EA6-4D2D-BC50-1AC6FFFDF8F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClipboardDetector", "ClipboardDetector.csproj", "{C8F16937-2EA6-4D2D-BC50-1AC6FFFDF8F1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotifyIconWpf", "NotifyIconWpf\NotifyIconWpf.csproj", "{21FCE695-AFBB-4EF8-942E-8E903282E897}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{C8F16937-2EA6-4D2D-BC50-1AC6FFFDF8F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8F16937-2EA6-4D2D-BC50-1AC6FFFDF8F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8F16937-2EA6-4D2D-BC50-1AC6FFFDF8F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21FCE695-AFBB-4EF8-942E-8E903282E897}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21FCE695-AFBB-4EF8-942E-8E903282E897}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21FCE695-AFBB-4EF8-942E-8E903282E897}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21FCE695-AFBB-4EF8-942E-8E903282E897}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

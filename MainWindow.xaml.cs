@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WK.Libraries.SharpClipboardNS;
 
+
 namespace ClipboardDetector
 {
     /// <summary>
@@ -46,6 +47,7 @@ namespace ClipboardDetector
             InitData();
         }
 
+
         protected override void OnClosed(EventArgs e)
         {
             clipboard.Dispose();
@@ -54,6 +56,8 @@ namespace ClipboardDetector
 
         private void InitData()
         {
+            if (!System.IO.File.Exists(filename)) return;
+
             var lines = System.IO.File.ReadAllLines(filename);
             foreach (var line in lines)
             {
@@ -151,6 +155,12 @@ namespace ClipboardDetector
                 myWindow.Opacity = 0.9d;
             }
 
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            clipboard.Dispose();
+            Application.Current.Shutdown();
         }
     }
 }
