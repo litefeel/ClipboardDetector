@@ -22,6 +22,9 @@ namespace ClipboardDetector
     public partial class MainWindow : Window
     {
         private SharpClipboard clipboard;
+        private string filename = @"D:\work\warcommander\Src\trunk\Client\Assets\BuildOnlyAssets\Language\zh-CN.txt";
+        private Dictionary<string, string> map = new Dictionary<string, string>();
+        private StringBuilder buffer = new StringBuilder();
 
         public MainWindow()
         {
@@ -40,6 +43,39 @@ namespace ClipboardDetector
             isSmall = true;
             myWindow_MouseDoubleClick(null, null);
 
+            InitData();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            clipboard.Dispose();
+            base.OnClosed(e);
+        }
+
+        private void InitData()
+        {
+            var lines = System.IO.File.ReadAllLines(filename);
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrEmpty(line)) continue;
+
+                var arr = line.Split('"');
+                if (arr.Length == 5)
+                    map[arr[1]] = line;
+            }
+        }
+
+        private string Trim(string str)
+        {
+            buffer.Clear();
+            for (var i = 0; i < str.Length; i++)
+            {
+                var c = str[i];
+                if (c == ' ' || c == '"' || c == '(' || c == ')' || c == ';')
+                    continue;
+                buffer.Append(c);
+            }
+            return buffer.ToString().Trim();
         }
 
         private void ClipboardChanged(object sender, SharpClipboard.ClipboardChangedEventArgs e)
@@ -53,13 +89,23 @@ namespace ClipboardDetector
                 // Get the cut/copied text.
                 Console.WriteLine(clipboard.ClipboardText);
                 myTxt.Text = $"ClipboardChanged {e.ContentType} {clipboard.ClipboardText}";
-                myTxt.Width = myTxt.ActualWidth;
+                //myTxt.Width = myTxt.ActualWidth;
+
+
+
+                var text = Trim(clipboard.ClipboardText);
+                if (map.TryGetValue(text, out var value))
+                {
+                    myTxt.Text = value;
+                    if (isSmall)
+                        myWindow_MouseDoubleClick(null, null);
+                }
             }
 
             // Is the content copied of image type?
             else if (e.ContentType == SharpClipboard.ContentTypes.Image)
             {
-                
+
                 // Get the cut/copied image.
                 //var img = clipboard.ClipboardImage;
             }
@@ -85,14 +131,14 @@ namespace ClipboardDetector
         {
             DragMove();
 
-           
+
         }
 
         private bool isSmall = false;
         private void myWindow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             isSmall = !isSmall;
-            if(isSmall)
+            if (isSmall)
             {
                 myWindow.Width = 50;
                 myWindow.Height = 50;
@@ -104,7 +150,7 @@ namespace ClipboardDetector
                 myWindow.Height = 70;
                 myWindow.Opacity = 0.9d;
             }
-            
+
         }
     }
 }
