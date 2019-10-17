@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using WK.Libraries.SharpClipboardNS;
 
 
 namespace ClipboardDetector
 {
+
+    public class Config
+    {
+        public string path { get; set; }
+    }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -45,6 +44,7 @@ namespace ClipboardDetector
             myWindow_MouseDoubleClick(null, null);
 
             InitData();
+
         }
 
 
@@ -54,11 +54,41 @@ namespace ClipboardDetector
             base.OnClosed(e);
         }
 
+        private Config ReadConfig()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            var dir = Path.GetDirectoryName(assembly.Location);
+            var filename = Path.Combine(dir, assembly.GetName().Name + ".exe.json");
+            if (!File.Exists(filename))
+            {
+                var json = JsonSerializer.Serialize(new Config());
+                File.WriteAllText(filename, json);
+                Application.Current.Shutdown();
+                return null;
+            }
+
+            var data = File.ReadAllText(filename);
+
+            try
+            {
+                var config = JsonSerializer.Deserialize<Config>(data);
+                return config;
+            }
+            catch (JsonException ex)
+            {
+                return null;
+            }
+        }
+
         private void InitData()
         {
-            if (!System.IO.File.Exists(filename)) return;
+            var config = ReadConfig();
+            var path = config?.path ?? filename;
 
-            var lines = System.IO.File.ReadAllLines(filename);
+            Console.WriteLine(path);
+            if (!File.Exists(path)) return;
+
+            var lines = File.ReadAllLines(path);
             foreach (var line in lines)
             {
                 if (string.IsNullOrEmpty(line)) continue;
