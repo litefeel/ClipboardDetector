@@ -43,7 +43,7 @@ namespace ClipboardDetector
             isSmall = true;
             myWindow_MouseDoubleClick(null, null);
 
-            InitData();
+            ReloadData();
 
         }
 
@@ -80,8 +80,9 @@ namespace ClipboardDetector
             }
         }
 
-        private void InitData()
+        private void ReloadData()
         {
+            map.Clear();
             var config = ReadConfig();
             var path = config?.path ?? filename;
 
@@ -187,7 +188,11 @@ namespace ClipboardDetector
 
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Reload_Click(object sender, RoutedEventArgs e)
+        {
+            ReloadData();
+        }
+        private void MenuItem_Quit_Click(object sender, RoutedEventArgs e)
         {
             clipboard.Dispose();
             Application.Current.Shutdown();
