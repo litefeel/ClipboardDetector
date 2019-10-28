@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -21,10 +22,13 @@ namespace ClipboardDetector
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const string StartUpKey = "ClipboardDetector";
+
         private SharpClipboard clipboard;
         private string filename = @"D:\work\warcommander\Src\trunk\Client\Assets\BuildOnlyAssets\Language\zh-CN.txt";
         private Dictionary<string, string> map = new Dictionary<string, string>();
         private StringBuilder buffer = new StringBuilder();
+
 
         public MainWindow()
         {
@@ -45,6 +49,41 @@ namespace ClipboardDetector
 
             ReloadData();
 
+            AutoStartUpMenuItem.IsChecked = IsAutoStartUp();
+        }
+
+        private string GetCurrentPath()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            var dir = Path.GetDirectoryName(assembly.Location);
+            var filename = Path.Combine(dir, assembly.GetName().Name + ".exe");
+            return filename;
+        }
+
+        private bool IsAutoStartUp()
+        {
+            string path = GetCurrentPath();
+            RegistryKey rk = Registry.CurrentUser;
+            RegistryKey rk2 = rk.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
+            var oldPath = rk2.GetValue(StartUpKey) as String;
+            rk2.Close();
+            rk.Close();
+            return oldPath == path;
+        }
+
+        private void ChangeAutoStartUp(bool isSet)
+        {
+            string path = GetCurrentPath();
+            // 注意这里推荐使用 CurrentUser 而不是 LocalMachine
+            // LocalMachine 需要注册权限
+            RegistryKey rk = Registry.CurrentUser;
+            RegistryKey rk2 = rk.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
+            if (isSet)
+                rk2.SetValue(StartUpKey, path);
+            else
+                rk2.DeleteValue(StartUpKey, false);
+            rk2.Close();
+            rk.Close();
         }
 
 
@@ -196,6 +235,12 @@ namespace ClipboardDetector
         {
             clipboard.Dispose();
             Application.Current.Shutdown();
+        }
+
+        private void MenuItem_AutoStartUp_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine(AutoStartUpMenuItem.IsChecked);
+            ChangeAutoStartUp(AutoStartUpMenuItem.IsChecked);
         }
     }
 }
