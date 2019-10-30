@@ -10,7 +10,7 @@
         MouseLeftButtonDown="myWindow_MouseLeftButtonDown" MouseDoubleClick="myWindow_MouseDoubleClick" ShowInTaskbar="False" ResizeMode="CanResize" >
     <Grid>
         <tb:TaskbarIcon x:Name="MyNotifyIcon"
-                        IconSource="/Icons/Inactive.ico" TrayMouseDoubleClick="OnTrayDoubleClick"
+                        IconSource="/Icons/Inactive.ico" TrayMouseDoubleClick="OnTrayIconDoubleClick"
                         ToolTipText="hello world">
 
             <!-- Set a simple context menu  -->

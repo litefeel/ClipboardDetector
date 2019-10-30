@@ -242,5 +242,14 @@ namespace ClipboardDetector
             Console.WriteLine(AutoStartUpMenuItem.IsChecked);
             ChangeAutoStartUp(AutoStartUpMenuItem.IsChecked);
         }
+
+        private void OnTrayIconDoubleClick(object sender, RoutedEventArgs e)
+        {
+            isSmall = true;
+            myWindow_MouseDoubleClick(null, null);
+            Application.Current.MainWindow.Left = 100;
+            Application.Current.MainWindow.Top = 100;
+            Application.Current.MainWindow.Show();
+        }
     }
 }
