@@ -8,9 +8,9 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="70" Topmost="True" Width="400" WindowStyle="None" AllowsTransparency="True"
         MouseLeftButtonDown="myWindow_MouseLeftButtonDown" MouseDoubleClick="myWindow_MouseDoubleClick" ShowInTaskbar="False" ResizeMode="CanResize" >
-    <Grid Margin="0,0,0,0">
+    <Grid>
         <tb:TaskbarIcon x:Name="MyNotifyIcon"
-                        IconSource="/Icons/Inactive.ico"
+                        IconSource="/Icons/Inactive.ico" TrayMouseDoubleClick="OnTrayDoubleClick"
                         ToolTipText="hello world">
 
             <!-- Set a simple context menu  -->
@@ -32,7 +32,8 @@
             </tb:TaskbarIcon.ContextMenu>
 
         </tb:TaskbarIcon>
-        <TextBox x:Name="myTxt" IsEnabled="False" Text="TextBox" FontSize="14"/>
-
+        <Border HorizontalAlignment="Stretch" BorderThickness="1,1,1,1" BorderBrush="Black">
+            <TextBox x:Name="myTxt" IsEnabled="False" Text="TextBox" FontSize="14" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+        </Border>
     </Grid>
 </Window>
