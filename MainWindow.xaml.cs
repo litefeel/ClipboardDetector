@@ -128,6 +128,31 @@ namespace ClipboardDetector
             Console.WriteLine(path);
             if (!File.Exists(path)) return;
 
+            LoadDataByLua(path, map);
+        }
+
+        private void LoadDataByLua(string path, Dictionary<string, string> map)
+        {
+            const string KeyPrefix = "key = \"";
+            const string ValuePrefix = "ChineseSimplified = \"";
+            var lines = File.ReadAllLines(path);
+            string key = null;
+            foreach (var fullline in lines)
+            {
+                var line = fullline.Trim();
+                if(line.StartsWith(KeyPrefix))
+                {
+                    key = line.Substring(KeyPrefix.Length, line.Length - KeyPrefix.Length - 2);
+                }else if(line.StartsWith(ValuePrefix))
+                {
+                    var value = line.Substring(ValuePrefix.Length, line.Length - ValuePrefix.Length - 2);
+                    map[key] = $"{key} = {value}";
+                }
+            }
+        }
+
+        private void LoadDataByIni(string path, Dictionary<string, string> map)
+        {
             var lines = File.ReadAllLines(path);
             foreach (var line in lines)
             {
