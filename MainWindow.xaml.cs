@@ -34,10 +34,8 @@ namespace ClipboardDetector
         {
             clipboard = new SharpClipboard();
 
+            clipboard.ObservableFormats.All = false;
             clipboard.ObservableFormats.Texts = true;
-            clipboard.ObservableFormats.Files = true;
-            clipboard.ObservableFormats.Images = true;
-            clipboard.ObservableFormats.Others = true;
             clipboard.ClipboardChanged += ClipboardChanged;
 
             Console.WriteLine("==================");
@@ -190,8 +188,6 @@ namespace ClipboardDetector
                 myTxt.Text = $"ClipboardChanged {e.ContentType} {clipboard.ClipboardText}";
                 //myTxt.Width = myTxt.ActualWidth;
 
-
-
                 var text = Trim(clipboard.ClipboardText);
                 if (map.TryGetValue(text, out var value))
                 {
@@ -199,30 +195,6 @@ namespace ClipboardDetector
                     if (isSmall)
                         myWindow_MouseDoubleClick(null, null);
                 }
-            }
-
-            // Is the content copied of image type?
-            else if (e.ContentType == SharpClipboard.ContentTypes.Image)
-            {
-
-                // Get the cut/copied image.
-                //var img = clipboard.ClipboardImage;
-            }
-
-            // Is the content copied of file type?
-            else if (e.ContentType == SharpClipboard.ContentTypes.Files)
-            {
-                // Get the cut/copied file/files.
-                //Debug.WriteLine(clipboard.ClipboardFiles.ToArray());
-
-                // ...or use 'ClipboardFile' to get a single copied file.
-                //Debug.WriteLine(clipboard.ClipboardFile);
-            }
-
-            // If the cut/copied content is complex, use 'Other'.
-            else if (e.ContentType == SharpClipboard.ContentTypes.Other)
-            {
-                // Do something with 'clipboard.ClipboardObject' or 'e.Content' here...
             }
         }
 
