@@ -9,29 +9,6 @@
         Title="MainWindow" Height="70" Topmost="True" Width="400" WindowStyle="None" AllowsTransparency="True"
         MouseLeftButtonDown="myWindow_MouseLeftButtonDown" MouseDoubleClick="myWindow_MouseDoubleClick" ShowInTaskbar="False" ResizeMode="CanResize" >
     <Grid>
-        <tb:TaskbarIcon x:Name="MyNotifyIcon"
-                        IconSource="/Icons/Inactive.ico" TrayMouseDoubleClick="OnTrayIconDoubleClick"
-                        ToolTipText="hello world">
-
-            <!-- Set a simple context menu  -->
-            <!-- the data context of the context menu is the NotifyIcon itself (see more about this in DataBinding samples) -->
-            <tb:TaskbarIcon.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="开机自启动"
-                              Name="AutoStartUpMenuItem"
-                              IsCheckable="True" IsChecked="True"
-                              Click="MenuItem_AutoStartUp_Click">
-                    </MenuItem>
-                    <MenuItem Header="重载数据"
-                              Click="MenuItem_Reload_Click">
-                    </MenuItem>
-                    <MenuItem Header="退出"
-                              Click="MenuItem_Quit_Click">
-                    </MenuItem>
-                </ContextMenu>
-            </tb:TaskbarIcon.ContextMenu>
-
-        </tb:TaskbarIcon>
         <Border HorizontalAlignment="Stretch" BorderThickness="1,1,1,1" BorderBrush="Black">
             <TextBox x:Name="myTxt" IsEnabled="False" Text="TextBox" FontSize="14" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
         </Border>

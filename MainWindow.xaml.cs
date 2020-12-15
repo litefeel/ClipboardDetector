@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+﻿using ClipboardDetector.Providers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,22 +13,21 @@ using WK.Libraries.SharpClipboardNS;
 namespace ClipboardDetector
 {
 
-    public class Config
-    {
-        public string path { get; set; }
-    }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const string StartUpKey = "ClipboardDetector";
 
         private SharpClipboard clipboard;
         private string filename = @"D:\work\warcommander\Src\trunk\Client\Assets\BuildOnlyAssets\Language\zh-CN.txt";
         private Dictionary<string, string> map = new Dictionary<string, string>();
         private StringBuilder buffer = new StringBuilder();
+        private Config config;
+        private string lastPath;
 
+        private bool isSmall = false;
+        private MyNotifyIcon notifyIcon;
 
         public MainWindow()
         {
@@ -45,45 +44,40 @@ namespace ClipboardDetector
             isSmall = true;
             myWindow_MouseDoubleClick(null, null);
 
+            notifyIcon = new MyNotifyIcon();
+            notifyIcon.OnItemClick = ReloadItem;
+            notifyIcon.ReloadDataClick = ReloadData;
+            notifyIcon.QuitClick = MenuItem_Quit_Click;
+            notifyIcon.NotifyIconDoubleClick = OnTrayIconDoubleClick;
+            notifyIcon.Init();
+
             ReloadData();
-
-            AutoStartUpMenuItem.IsChecked = IsAutoStartUp();
         }
 
-        private string GetCurrentPath()
+        private void ReloadItem(Item item)
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            var dir = Path.GetDirectoryName(assembly.Location);
-            var filename = Path.Combine(dir, assembly.GetName().Name + ".exe");
-            return filename;
-        }
+            Console.WriteLine(item.path);
+            if (!File.Exists(item.path)) return;
 
-        private bool IsAutoStartUp()
-        {
-            string path = GetCurrentPath();
-            RegistryKey rk = Registry.CurrentUser;
-            RegistryKey rk2 = rk.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
-            var oldPath = rk2.GetValue(StartUpKey) as String;
-            rk2.Close();
-            rk.Close();
-            return oldPath == path;
-        }
+            if (string.IsNullOrEmpty(item.format))
+                item.format = Path.GetExtension(item.path).Substring(1).ToLower();
 
-        private void ChangeAutoStartUp(bool isSet)
-        {
-            string path = GetCurrentPath();
-            // 注意这里推荐使用 CurrentUser 而不是 LocalMachine
-            // LocalMachine 需要注册权限
-            RegistryKey rk = Registry.CurrentUser;
-            RegistryKey rk2 = rk.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
-            if (isSet)
-                rk2.SetValue(StartUpKey, path);
-            else
-                rk2.DeleteValue(StartUpKey, false);
-            rk2.Close();
-            rk.Close();
-        }
+            Action<string, Dictionary<string, string>> func = item.format switch
+            {
+                "lua" => LoadDataByLua,
+                "ini" => LoadDataByIni,
+                "bytes" => ProviderBytes.Load,
+                "xlsx" => ProviderExcel.Load,
+                _ => null,
+            };
+            map.Clear();
+            func?.Invoke(item.path, map);
 
+            lastPath = item.path;
+
+
+            UpdateClipboardText();
+        }
 
         protected override void OnClosed(EventArgs e)
         {
@@ -120,13 +114,24 @@ namespace ClipboardDetector
         private void ReloadData()
         {
             map.Clear();
-            var config = ReadConfig();
-            var path = config?.path ?? filename;
+            config = ReadConfig();
+            var itemIdx = 0;
+            if (config != null && config.items != null && config.items.Count > 0)
+            {
+                Item item;
+                for (var i = 0; i < config.items.Count; i++)
+                {
+                    item = config.items[i];
+                    if (string.IsNullOrEmpty(item.name))
+                        item.name = Path.GetFileNameWithoutExtension(item.path);
+                    if (item.path == lastPath)
+                        itemIdx = i;
+                }
 
-            Console.WriteLine(path);
-            if (!File.Exists(path)) return;
-
-            LoadDataByLua(path, map);
+                item = config.items[itemIdx];
+                ReloadItem(item);
+            }
+            notifyIcon.ResetItems(config?.items, itemIdx);
         }
 
         private void LoadDataByLua(string path, Dictionary<string, string> map)
@@ -138,10 +143,11 @@ namespace ClipboardDetector
             foreach (var fullline in lines)
             {
                 var line = fullline.Trim();
-                if(line.StartsWith(KeyPrefix))
+                if (line.StartsWith(KeyPrefix))
                 {
                     key = line.Substring(KeyPrefix.Length, line.Length - KeyPrefix.Length - 2);
-                }else if(line.StartsWith(ValuePrefix))
+                }
+                else if (line.StartsWith(ValuePrefix))
                 {
                     var value = line.Substring(ValuePrefix.Length, line.Length - ValuePrefix.Length - 2);
                     map[key] = $"{key} = {value}";
@@ -185,27 +191,32 @@ namespace ClipboardDetector
             {
                 // Get the cut/copied text.
                 Console.WriteLine(clipboard.ClipboardText);
-                myTxt.Text = $"ClipboardChanged {e.ContentType} {clipboard.ClipboardText}";
+
                 //myTxt.Width = myTxt.ActualWidth;
 
-                var text = Trim(clipboard.ClipboardText);
-                if (map.TryGetValue(text, out var value))
-                {
-                    myTxt.Text = value;
-                    if (isSmall)
-                        myWindow_MouseDoubleClick(null, null);
-                }
+                UpdateClipboardText();
+            }
+        }
+
+        private void UpdateClipboardText()
+        {
+            if (string.IsNullOrEmpty(clipboard.ClipboardText))
+                return;
+            myTxt.Text = $"ClipboardChanged {clipboard.ClipboardText}";
+            var text = Trim(clipboard.ClipboardText);
+            if (map.TryGetValue(text, out var value))
+            {
+                myTxt.Text = value;
+                if (isSmall)
+                    myWindow_MouseDoubleClick(null, null);
             }
         }
 
         private void myWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DragMove();
-
-
         }
 
-        private bool isSmall = false;
         private void myWindow_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             isSmall = !isSmall;
@@ -224,23 +235,13 @@ namespace ClipboardDetector
 
         }
 
-        private void MenuItem_Reload_Click(object sender, RoutedEventArgs e)
-        {
-            ReloadData();
-        }
-        private void MenuItem_Quit_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Quit_Click()
         {
             clipboard.Dispose();
             Application.Current.Shutdown();
         }
 
-        private void MenuItem_AutoStartUp_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine(AutoStartUpMenuItem.IsChecked);
-            ChangeAutoStartUp(AutoStartUpMenuItem.IsChecked);
-        }
-
-        private void OnTrayIconDoubleClick(object sender, RoutedEventArgs e)
+        private void OnTrayIconDoubleClick()
         {
             isSmall = true;
             myWindow_MouseDoubleClick(null, null);

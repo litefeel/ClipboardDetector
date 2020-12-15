@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>Inactive.ico</ApplicationIcon>
+    <ApplicationIcon>Icons\Inactive.ico</ApplicationIcon>
     <Win32Resource />
     <StartupObject>ClipboardDetector.App</StartupObject>
     <NoWin32Manifest>true</NoWin32Manifest>
@@ -32,11 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpClipboard" Version="3.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="NotifyIconWpf\NotifyIconWpf.csproj" />
+    <PackageReference Include="EPPlus" Version="5.4.2" />
+    <PackageReference Include="SharpClipboard" Version="3.5.2" />
   </ItemGroup>
 
   <ItemGroup>
