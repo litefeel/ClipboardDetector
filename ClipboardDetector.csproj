@@ -2,12 +2,16 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Icons\Inactive.ico</ApplicationIcon>
     <Win32Resource />
     <StartupObject>ClipboardDetector.App</StartupObject>
     <NoWin32Manifest>true</NoWin32Manifest>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>portable</DebugType>
+    <PackageProjectUrl>https://github.com/litefeel/ClipboardDetector</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -32,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EPPlus" Version="5.4.2" />
+    <PackageReference Include="EPPlus" Version="5.8.7" />
     <PackageReference Include="SharpClipboard" Version="3.5.2" />
   </ItemGroup>
 

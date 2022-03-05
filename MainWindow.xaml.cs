@@ -1,10 +1,12 @@
 ﻿using ClipboardDetector.Providers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using WK.Libraries.SharpClipboardNS;
@@ -13,17 +15,22 @@ using WK.Libraries.SharpClipboardNS;
 namespace ClipboardDetector
 {
 
+    public delegate void PrividerFunc(string path, Dictionary<string, string> map);
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        
 
         private SharpClipboard clipboard;
-        private string filename = @"D:\work\warcommander\Src\trunk\Client\Assets\BuildOnlyAssets\Language\zh-CN.txt";
         private Dictionary<string, string> map = new Dictionary<string, string>();
+        private bool isRegex;
+        private bool isReplace;
         private StringBuilder buffer = new StringBuilder();
         private Config config;
+        private readonly Dictionary<string, PrividerFunc> prividerFuncs = new();
         private string lastPath;
 
         private bool isSmall = false;
@@ -37,7 +44,7 @@ namespace ClipboardDetector
             clipboard.ObservableFormats.Texts = true;
             clipboard.ClipboardChanged += ClipboardChanged;
 
-            Console.WriteLine("==================");
+            Debug.WriteLine("==================");
 
             InitializeComponent();
 
@@ -51,30 +58,36 @@ namespace ClipboardDetector
             notifyIcon.NotifyIconDoubleClick = OnTrayIconDoubleClick;
             notifyIcon.Init();
 
+            InitProviders();
+
             ReloadData();
+        }
+
+        private void InitProviders()
+        {
+            prividerFuncs.Clear();
+            prividerFuncs.Add("lua", LoadDataByLua);
+            prividerFuncs.Add("ini", LoadDataByIni);
+            prividerFuncs.Add("bytes", ProviderBytes.Load);
+            prividerFuncs.Add("xlsx", ProviderExcel.Load);
+            prividerFuncs.Add("regex", ProviderRegex.Load);
         }
 
         private void ReloadItem(Item item)
         {
-            Console.WriteLine(item.path);
+            Debug.WriteLine(item.path);
             if (!File.Exists(item.path)) return;
 
             if (string.IsNullOrEmpty(item.format))
                 item.format = Path.GetExtension(item.path).Substring(1).ToLower();
 
-            Action<string, Dictionary<string, string>> func = item.format switch
-            {
-                "lua" => LoadDataByLua,
-                "ini" => LoadDataByIni,
-                "bytes" => ProviderBytes.Load,
-                "xlsx" => ProviderExcel.Load,
-                _ => null,
-            };
+            prividerFuncs.TryGetValue(item.format.ToLower(), out var func);
             map.Clear();
             func?.Invoke(item.path, map);
 
             lastPath = item.path;
-
+            isRegex = item.regex;
+            isReplace = item.replace;
 
             UpdateClipboardText();
         }
@@ -87,23 +100,24 @@ namespace ClipboardDetector
 
         private Config ReadConfig()
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            var dir = Path.GetDirectoryName(assembly.Location);
-            var filename = Path.Combine(dir, assembly.GetName().Name + ".exe.json");
-            if (!File.Exists(filename))
+            var fullname = Environment.ProcessPath + ".json";
+            if (!File.Exists(fullname))
             {
                 var json = JsonSerializer.Serialize(new Config());
-                File.WriteAllText(filename, json);
+                File.WriteAllText(fullname, json);
                 Application.Current.Shutdown();
                 return null;
             }
 
-            var data = File.ReadAllText(filename);
+            var data = File.ReadAllText(fullname);
 
             try
             {
-                var config = JsonSerializer.Deserialize<Config>(data);
-                return config;
+                return JsonSerializer.Deserialize<Config>(data, new JsonSerializerOptions
+                {
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true,
+                });
             }
             catch (JsonException ex)
             {
@@ -185,31 +199,68 @@ namespace ClipboardDetector
         {
             myTxt.Text = $"ClipboardChanged {e.ContentType}";
 
-            Console.WriteLine($"ClipboardChanged {e.ContentType}");
+            Debug.WriteLine($"ClipboardChanged {e.ContentType}");
             // Is the content copied of text type?
             if (e.ContentType == SharpClipboard.ContentTypes.Text)
             {
                 // Get the cut/copied text.
-                Console.WriteLine(clipboard.ClipboardText);
+                Debug.WriteLine(clipboard.ClipboardText);
 
                 //myTxt.Width = myTxt.ActualWidth;
 
                 UpdateClipboardText();
+
+               
             }
         }
 
         private void UpdateClipboardText()
         {
-            if (string.IsNullOrEmpty(clipboard.ClipboardText))
+            var text = clipboard.ClipboardText;
+
+            if (string.IsNullOrEmpty(text))
                 return;
-            myTxt.Text = $"ClipboardChanged {clipboard.ClipboardText}";
-            var text = Trim(clipboard.ClipboardText);
-            if (map.TryGetValue(text, out var value))
+
+            try
             {
-                myTxt.Text = value;
-                if (isSmall)
-                    myWindow_MouseDoubleClick(null, null);
+                clipboard.MonitorClipboard = false;
+
+                myTxt.Text = $"ClipboardChanged {text}";
+
+                text = Trim(text);
+                string input = text;
+                string output = null;
+                if(isRegex)
+                {
+                    foreach (var entry in map)
+                    {
+                        if (Regex.IsMatch(input, entry.Key))
+                        {
+                            output = Regex.Replace(input, entry.Key, entry.Value);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    map.TryGetValue(input, out output);
+                }
+
+                if(output != null)
+                {
+                    myTxt.Text = output;
+                    if (isSmall)
+                        myWindow_MouseDoubleClick(null, null);
+
+                    if(isReplace)
+                        Clipboard.SetText(output);
+                }
             }
+            finally
+            {
+                clipboard.MonitorClipboard = true;
+            }
+            
         }
 
         private void myWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
