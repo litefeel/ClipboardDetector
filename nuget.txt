@@ -1,2 +1,2 @@
-Install-Package SharpClipboard -Version 3.3.0
+Install-Package SharpClipboard -Version 3.5.2
 https://github.com/Willy-Kimura/SharpClipboard
